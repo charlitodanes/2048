@@ -85,7 +85,7 @@ window.onload = function(){
     document.getElementById("player").innerText = player;
     alert(`Hello ${player} and welcome to 2048!`);
   }
-  alert(`Use the ARROW KEYS to play the game.\n\nNote: At the moment, this game is only playable on desktop devices. I'll update this soon.\n\nGood luck :)`);
+  alert(`Use the ARROW KEYS to play the game.\n\nNOTE: At the moment, this game is only playable on desktop devices. I'll update this soon.\n\nGood luck :)`);
 }
 
 // Create function for event listeners for keys sliding (left,right,up,down)
