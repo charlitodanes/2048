@@ -1,4 +1,4 @@
-// Declaring variables
+// Variable Declarations
 let board;
 let score = 0;
 let bestScore = score;
