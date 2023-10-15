@@ -77,7 +77,7 @@ window.onload = function(){
   setGame();
   let player = prompt("Enter your name: ");
   if(player === "" || player === null){
-    document.getElementById("player").innerText = "Feeling Mysterious Ferson";
+    document.getElementById("player").innerText = "Mysterious Ferson";
     alert("Feeling mysterious pud!"); 
   }
   else{
