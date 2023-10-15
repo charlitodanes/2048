@@ -1,6 +1,7 @@
 // Declaring variables
 let board;
 let score = 0;
+let bestScore = score;
 let rows = 4;
 let columns = 4;
 let is2048Exist = false;
@@ -9,8 +10,6 @@ let is8192Exist = false;
 let gameOver = false;
 
 // Create function to set the gameboard
-
-
 function setGame(){
   // Initialize the 4x4 game board with all tiles set to 0
   board = [
@@ -85,7 +84,7 @@ window.onload = function(){
     document.getElementById("player").innerText = player;
     alert(`Hello ${player} and welcome to 2048!`);
   }
-  alert(`Use the ARROW KEYS to play the game.\n\nNOTE: At the moment, this game is only playable on desktop devices. I'll update this soon.\n\nGood luck :)`);
+  alert(`For desktop devices, use the ARROW KEYS to play the game.\n\nGood luck :)`);
 }
 
 // Create function for event listeners for keys sliding (left,right,up,down)
@@ -115,6 +114,7 @@ function handleSlide(e){
   }
   // Update the score
   document.getElementById("score").innerText = score.toString();
+  document.getElementById("best-score").innerText = bestScore.toString();
   
   checkWin();
 
@@ -172,6 +172,9 @@ function slideLeft(){
   for(let r = 0; r < rows; r++){
     let row = board[r];
 
+    // store the original row
+    let originalRow = row.slice();
+
     // call the slide function to merge similar tile values
     row = slide(row);
 
@@ -182,15 +185,26 @@ function slideLeft(){
     for(let c = 0; c < columns; c++){
       let tile = document.getElementById(r.toString() + "-" + c.toString());
       let num = board[r][c];
+
+      // line for animation
+      if(originalRow[c] !== num && num !== 0){
+        tile.style.animation = "slide-from-right 0.3s";
+
+        setTimeout(() => {
+          tile.style.animation = "";
+        }, 300)
+      }
       updateTile(tile, num);
     }
   }
-  // generateRandomTwo();
 }
 
 function slideRight(){
   for(let r = 0; r < rows; r++){
     let row = board[r];
+
+    // store the original row
+    let originalRow = row.slice();
 
     // Reverse the order of elements in the row, mirrored version of the slide left
     row = row.reverse();
@@ -208,10 +222,18 @@ function slideRight(){
     for(let c = 0; c < columns; c++){
       let tile = document.getElementById(r.toString() + "-" + c.toString());
       let num = board[r][c];
+
+      // line for animation
+      if(originalRow[c] !== num && num !== 0){
+        tile.style.animation = "slide-from-left 0.3s";
+
+        setTimeout(() => {
+          tile.style.animation = "";
+        }, 300)
+      }
       updateTile(tile, num);
     }
   }
-  // generateRandomTwo();
 }
 
 function slideUp(){
@@ -220,18 +242,38 @@ function slideUp(){
       // Create a temporary array called row that represents a column from top to bottom.
       let row = [board[0][c], board[1][c], board[2][c], board[3][c]] // first column of the board =  [2, 0, 2, 0]
 
-      row = slide(row) // [2, 2] -> [4, 0] -> [4, 0, 0, 0]
+      // store the original row
+      let originalRow = row.slice();
+
+      row = slide(row); // [2, 2] -> [4, 0] -> [4, 0, 0, 0]
+
+      // Check which tiles have changed in column
+      let changedIndices =[];
+
+      for(let r = 0; r < rows; r++){
+        // This will record the current position of tiles that have changed,
+        if(originalRow[r] !== row[r]){
+          changedIndices.push(r);
+        }
+      }
 
       // Update the id of the tile
       for(let r = 0; r < rows; r++){
           // sets the values of the board array back to the values of the modified row, essentially updating the column in the game board.
-          board[r][c] = row[r]
+          board[r][c] = row[r];
           let tile = document.getElementById(r.toString() + "-" + c.toString());
           let num = board[r][c];
-          updateTile(tile, num)
+
+          if(changedIndices.includes(r) && num !== 0){
+            tile.style.animation = "slide-from-bottom 0.3s";
+            setTimeout(() => {
+              tile.style.animation = "";
+            }, 300);
+          }
+
+          updateTile(tile, num);
       }
   }
-  // generateRandomTwo();
 }
 
 function slideDown(){
@@ -239,23 +281,43 @@ function slideDown(){
       // In two dimensional array, the first number represents row, and second is column.
       // Create a temporary array called row that represents a column from top to bottom.
       let row = [board[0][c], board[1][c], board[2][c], board[3][c]] // first column of the board =  [2, 0, 2, 0]
+
+      let originalRow = row.slice();
+
       // Reverse the order of elements in the column, mirrored version of the slide up
       row = row.reverse(); 
 
-      row = slide(row) // [2, 2] -> [4, 0] -> [4, 0, 0, 0]
+      row = slide(row); // [2, 2] -> [4, 0] -> [4, 0, 0, 0]
 
       // Reverse the row again to restore its original order
       row = row.reverse(); 
+
+      let changedIndices =[];
+
+      for(let r = 0; r < rows; r++){
+        // This will record the current position of tiles that have changed,
+        if(originalRow[r] !== row[r]){
+          changedIndices.push(r);
+        }
+      }
+
       // Update the id of the tile
       for(let r = 0; r < rows; r++){
           // sets the values of the board array back to the values of the modified row, essentially updating the column in the game board.
           board[r][c] = row[r]
           let tile = document.getElementById(r.toString() + "-" + c.toString());
           let num = board[r][c];
-          updateTile(tile, num)
+
+          if(changedIndices.includes(r) && num !== 0){
+            tile.style.animation = "slide-from-top 0.3s";
+            setTimeout(() => {
+              tile.style.animation = "";
+            }, 300);
+          }
+
+          updateTile(tile, num);
       }
   }
-  // generateRandomTwo();
 }
 
 function hasEmptyTile(){
@@ -362,7 +424,83 @@ function restartGame(){
   is8192Exist = false;
   let gameOver = false;
   setTwo(); // set a new random 2
+  if(score > bestScore){
+    bestScore = score;
+  }
   score = 0 // reset the score to 0  
   document.getElementById("score").innerText = score.toString();
+  document.getElementById("best-score").innerText = bestScore.toString();
 }
 
+//!Mobile compatibility 
+// Capture the doordinates of the touch input
+document.addEventListener("touchstart", (e) => {
+  startX = e.touches[0].clientX;
+  startY = e.touches[0].clientY;
+});
+
+// prevent scrolling on touch input
+document.addEventListener("touchmove", (e) => {
+  if(!e.target.className.includes("tile")){
+    return;
+  }
+
+  e.preventDefault(); // disables the line scrolling.
+}, {passive: false});
+
+// listen for the "touchend" event on the entire document
+document.addEventListener("touchend", (e) => {
+   
+  // check if the element triggered has a class of "tile"
+  if(!e.target.className.includes("tile")){
+    return;
+  }
+
+  // calculate the horizontal and vertical difference between the initial position and final position
+  let diffX = startX - e.changedTouches[0].clientX;
+  let diffY = startY - e.changedTouches[0].clientY;
+
+  // check if the horizontal swipe is greater than the vertical swipe
+  if(Math.abs(diffX) > Math.abs(diffY)){ // if true, horizontal swipe
+    // swipe left
+    if(diffX > 0){
+      slideLeft();
+      setTwo();
+    }
+    // swipe right
+    else{
+      slideRight();
+      setTwo();
+    }
+  }
+  else{ // vertical swipe
+    // swipe up
+    if(diffY > 0){
+      slideUp();
+      setTwo();
+    }
+    // swipe down
+    else{
+      slideDown();
+      setTwo();
+    }
+  }
+  
+  // Update the score
+  document.getElementById("score").innerText = score.toString();
+  document.getElementById("best-score").innerText = bestScore.toString();
+  
+  checkWin();
+
+  // Call hasLost() to check for game over conditions
+  if (hasLost()) {
+    if (!gameOver) {
+      gameOver = true;
+      setTimeout(() => {
+        alert("Game Over! No more tiles to merge. The game will restart.");
+        gameOver = false;
+        restartGame();
+      }, 100);
+    }
+  }
+});
